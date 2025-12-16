@@ -1,53 +1,90 @@
-# Projet : Plateforme Web de Monitoring Système en Temps Réel
+# System Monitor — Application Web de Monitoring Système
 
-## 1. PRÉSENTATION DU PROJET
+Un projet simple pour visualiser en temps réel les métriques système (CPU, mémoire, processus, swap, GPU si disponible) via une interface web.
 
-### 1.1 Contexte et Problématique
+Ce README explique comment lancer l'application localement (backend + frontend), avec ou sans Docker, et comment dépanner les problèmes fréquents.
 
-Dans un environnement professionnel où la surveillance des infrastructures informatiques est cruciale, les administrateurs système nécessitent des outils accessibles, performants et intuitifs pour monitorer l'état des serveurs et des applications. Les solutions traditionnelles comme `htop` ou `top` sont puissantes mais limitées à l'interface en ligne de commande, nécessitant un accès direct au serveur.
+## Prérequis
+- Node.js (>= 18 LTS) et npm ou yarn
+- Git
+- (Optionnel) Docker & Docker Compose si vous souhaitez exécuter avec des conteneurs
 
-### 1.2 Objectifs du Projet
+## Structure du dépôt
+- `backend/` : API Express + Socket.IO, collecte des métriques (systeminformation)
+- `frontend/` : application React + TypeScript (Vite)
+- `docker-compose.yml` : composition optionnelle
 
-Développer une application web moderne permettant la surveillance en temps réel des ressources système avec les objectifs suivants :
+## Installation (sans Docker)
 
-- **Accessibilité universelle** : Interface web accessible depuis tout navigateur
-- **Visualisation intuitive** : Représentation graphique des métriques système
-- **Temps réel** : Rafraîchissement automatique des données
-- **Expérience utilisateur optimale** : Design moderne et responsive
-- **Scalabilité** : Architecture permettant de monitorer plusieurs serveurs
+1. Cloner le dépôt :
 
-### 1.3 Périmètre Fonctionnel
+```bash
+git clone <repo-url>
+cd application-web-de-monitoring-de-processus
+```
 
-**Fonctionnalités principales :**
-- Monitoring CPU (utilisation globale et par cœur)
-- Surveillance mémoire (RAM, swap)
-- Liste des processus actifs avec détails
-- Historique des métriques avec graphiques
-- Tri et filtrage des processus
-- Alertes sur seuils critiques
+2. Installer et lancer le backend :
 
-**Fonctionnalités secondaires :**
-- Monitoring réseau (bande passante, connexions)
-- Surveillance disque (I/O, espace)
-- Gestion multi-serveurs
-- Historisation des données
-- Export de rapports
+```bash
+cd backend
+npm install
+# Copier .env.example vers .env si besoin et ajuster les variables
+# Exemple minimal :
+#   PORT=4000
+#   JWT_SECRET=change_me
+
+# Lancer en mode dev
+npm run dev
+```
+
+3. Installer et lancer le frontend :
+
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+Ensuite ouvrez `http://localhost:5173` (ou l'URL indiquée par Vite) dans votre navigateur.
+
+
+## Variables d'environnement importantes
+- `PORT` : port d'écoute du backend (par défaut `4000`)
+- `JWT_SECRET` : secret JWT (par défaut `change_me` en dev)
+- `DEBUG_GPU` : si défini (ex. `DEBUG_GPU=1`) active la journalisation détaillée des infos GPU côté backend
+
+Exemple pour lancer le backend avec debug GPU :
+
+```bash
+DEBUG_GPU=1 npm run dev
+```
+
+## Comment ça marche (rapidement)
+- Le backend collecte périodiquement des métriques via le package `systeminformation` et émet des événements WebSocket `metrics:update`.
+- Le frontend se connecte automatiquement (après login demo) et reçoit les mises à jour en temps réel pour alimenter les graphiques.
+
+## Dépannage rapide
+- Erreurs de démarrage Node/TypeScript : assurez-vous d'utiliser une version Node moderne (>=18). Nettoyez `node_modules` et réinstallez si besoin (`rm -rf node_modules && npm install`).
+- Backend renvoie `No GPU` dans l'UI :
+  - Lancez le backend avec `DEBUG_GPU=1` et regardez les logs. Ils afficheront la sortie de `systeminformation.graphics()` puis la forme normalisée envoyée au frontend.
+  - Certains systèmes ne fournissent pas l'utilisation GPU (util) via `systeminformation`; dans ce cas l'UI affichera le nombre de GPU détectés et le nom/fournisseur.
+- Erreurs CORS ou WebSocket : vérifiez que le frontend se connecte à l'URL correcte (`http://localhost:4000`) et que `io` est configuré pour autoriser `origin: '*'` (en dev).
+
+## Tests
+- Backend : `cd backend && npm test` (si des tests sont présents)
+- Frontend : `cd frontend && npm test`
+
+## Contribution
+- Forkez le projet, créez une branche feature/bugfix, ouvrez une Pull Request. Soyez sûr d'ajouter des tests pour les changements significatifs.
+
+## Remarques et améliorations possibles
+- Ajouter une collecte GPU spécifique pour NVIDIA (`nvidia-smi`) si `systeminformation` ne fournit pas l'utilisation.
+- Ajouter authentification utilisateur sérieuse et ACLs pour les actions sensibles (kill/renice).
+- Ajouter configuration via UI pour sélectionner serveurs distants et leurs credentials.
 
 ---
 
-## 2. ARCHITECTURE TECHNIQUE
-
-### 2.1 Stack Technologique
-
-#### Frontend
-- **Framework** : React 18+ avec TypeScript
-- **Styling** : Tailwind CSS 3+
-- **Graphiques** : D3.js ou Recharts
-- **État global** : Redux Toolkit ou Zustand
-- **Communication temps réel** : WebSocket (Socket.io)
-- **Requêtes HTTP** : Axios ou React Query
-- **Icônes** : Lucide React
-- **Build** : Vite ou Next.js
+Si vous voulez que je rédige une version plus complète (exemples `.env`, `docker-compose` détaillé, ou instructions de déploiement), dites-moi ce que vous préférez et je l'ajouterai.
 
 #### Backend
 - **Runtime** : Node.js 20+ (LTS)
