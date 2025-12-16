@@ -145,3 +145,8 @@ Si vous voulez que je rédige une version plus complète (exemples `.env`, `dock
     └─────────┘    └─────────┘    └─────────┘
 ```
 
+![1765916138933](image/README/1765916138933.png)
+![alt text](image.png)
+![1765916165148](image/README/1765916165148.png)
+
+![1765916187173](image/README/1765916187173.png)
