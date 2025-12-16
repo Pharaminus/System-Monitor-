@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Server {
+  id         String   @id @default(uuid())
+  hostname   String
+  ipAddress  String   @map("ip_address")
+  osType     String?  @map("os_type")
+  osVersion  String?  @map("os_version")
+  status     String   @default("active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  metrics    MetricsHistory[]
+  processes  ProcessSnapshot[]
+}
+
+model MetricsHistory {
+  id          Int      @id @default(autoincrement())
+  server      Server?  @relation(fields: [serverId], references: [id])
+  serverId    String?
+  timestamp   DateTime
+  cpuUsage    Float?   @map("cpu_usage")
+  memoryUsage Float?   @map("memory_usage")
+  memoryTotal Int?     @map("memory_total")
+  memoryUsed  Int?     @map("memory_used")
+}
+
+model ProcessSnapshot {
+  id          Int     @id @default(autoincrement())
+  server      Server? @relation(fields: [serverId], references: [id])
+  serverId    String?
+  timestamp   DateTime
+  pid         Int
+  name        String?
+  user        String?
+  cpuUsage    Float?  @map("cpu_usage")
+  memoryUsage Float?  @map("memory_usage")
+  state       String?
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  role     String @default("viewer")
+}
